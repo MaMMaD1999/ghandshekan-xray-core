@@ -121,6 +121,9 @@ func (d *DefaultDispatcher) Init(config *Config, om outbound.Manager, router rou
 	d.router = router
 	d.policy = pm
 	d.stats = sm
+	if c, err := sm.GetOrRegisterCounter("pronet>>>capability>>>1"); err == nil && c != nil {
+		c.Set(1)
+	}
 	return nil
 }
 
@@ -164,7 +167,7 @@ func (d *DefaultDispatcher) getLink(ctx context.Context) (*transport.Link, *tran
 			name := "user>>>" + user.Email + ">>>traffic>>>uplink"
 			if c, _ := d.stats.GetOrRegisterCounter(name); c != nil {
 				inboundLink.Writer = &SizeStatWriter{
-					Counter: c,
+					Counter: scopedTrafficCounter(d.stats, sessionInbound, user.Email, "uplink", c),
 					Writer:  inboundLink.Writer,
 				}
 			}
@@ -173,7 +176,7 @@ func (d *DefaultDispatcher) getLink(ctx context.Context) (*transport.Link, *tran
 			name := "user>>>" + user.Email + ">>>traffic>>>downlink"
 			if c, _ := d.stats.GetOrRegisterCounter(name); c != nil {
 				outboundLink.Writer = &SizeStatWriter{
-					Counter: c,
+					Counter: scopedTrafficCounter(d.stats, sessionInbound, user.Email, "downlink", c),
 					Writer:  outboundLink.Writer,
 				}
 			}
@@ -201,14 +204,14 @@ func WrapLink(ctx context.Context, policyManager policy.Manager, statsManager st
 		if p.Stats.UserUplink {
 			name := "user>>>" + user.Email + ">>>traffic>>>uplink"
 			if c, _ := statsManager.GetOrRegisterCounter(name); c != nil {
-				link.Reader.(*buf.TimeoutWrapperReader).Counter = c
+				link.Reader.(*buf.TimeoutWrapperReader).Counter = scopedTrafficCounter(statsManager, sessionInbound, user.Email, "uplink", c)
 			}
 		}
 		if p.Stats.UserDownlink {
 			name := "user>>>" + user.Email + ">>>traffic>>>downlink"
 			if c, _ := statsManager.GetOrRegisterCounter(name); c != nil {
 				link.Writer = &SizeStatWriter{
-					Counter: c,
+					Counter: scopedTrafficCounter(statsManager, sessionInbound, user.Email, "downlink", c),
 					Writer:  link.Writer,
 				}
 			}
