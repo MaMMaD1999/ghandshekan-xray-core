@@ -1,3 +1,9 @@
+# GhandShekan custom accounting core
+
+Xray-core fork used by [GhandShekan custom panels](https://github.com/MaMMaD1999/ghandshekan-3x-ui). Adds per-user, per-inbound raw traffic counters for quota coefficients and master/node reports. Wire identifiers stay compatible with existing installations.
+
+---
+
 # Project X
 
 [Project X](https://github.com/XTLS) originates from XTLS protocol, providing a set of network tools such as [Xray-core](https://github.com/XTLS/Xray-core) and [REALITY](https://github.com/XTLS/REALITY).
